@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -23,9 +23,7 @@ jobs:
 
       - name: Setup iOS SDK
         run: |
-          # 1. Xóa thư mục sdks giữ chỗ của Theos để tránh lỗi "already exists"
           rm -rf ~/theos/sdks
-          # 2. Tải SDK 14.5 chuẩn
           git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/theos/sdks.git ~/theos/sdks
           cd ~/theos/sdks
           git sparse-checkout set --no-cone iPhoneOS14.5.sdk
@@ -40,12 +38,11 @@ jobs:
           mkdir -p output
           cp packages/*.deb output/ 2>/dev/null || true
           find .theos -name "*.dylib" -exec cp {} output/ \; 2>/dev/null || true
-          echo "Danh sach tep da bien dich:"
-          ls -lh output/
+          ls -la output/
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: VideoStarTool-Build-${{ github.run_number }}
+          name: VideoStarTool-Build
           path: output/*
           if-no-files-found: error
