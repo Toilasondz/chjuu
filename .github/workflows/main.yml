@@ -1,10 +1,12 @@
 name: Build VideoStar Tweak
+
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: macos-14
@@ -13,19 +15,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
       - name: Setup iOS SDK
         run: |
+          # 1. Xóa thư mục sdks giữ chỗ của Theos để tránh lỗi "already exists"
+          rm -rf ~/theos/sdks
+          # 2. Tải SDK 14.5 chuẩn
           git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/theos/sdks.git ~/theos/sdks
           cd ~/theos/sdks
           git sparse-checkout set --no-cone iPhoneOS14.5.sdk
           git checkout
+
       - name: Build Tweak Package
         run: |
           make package FINALPACKAGE=1
+
       - name: Prepare Artifacts
         run: |
           mkdir -p output
@@ -33,6 +42,7 @@ jobs:
           find .theos -name "*.dylib" -exec cp {} output/ \; 2>/dev/null || true
           echo "Danh sach tep da bien dich:"
           ls -lh output/
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
